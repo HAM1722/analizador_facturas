@@ -1,0 +1,127 @@
+"""
+Generador de Informe EMCALI Simple
+Informe directo con solo los datos de la factura EMCALI
+"""
+
+import os
+from datetime import datetime
+from docx import Document
+from docx.shared import Pt, Inches, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_TABLE_ALIGNMENT
+
+def generar_informe_emcali_simple():
+    """Generar informe DOCX simple para EMCALI"""
+    
+    print("📄 Generando informe EMCALI simple...")
+    
+    # Crear documento
+    doc = Document()
+    
+    # Configurar márgenes
+    sections = doc.sections
+    for section in sections:
+        section.top_margin = Inches(1)
+        section.bottom_margin = Inches(1)
+        section.left_margin = Inches(1)
+        section.right_margin = Inches(1)
+    
+    # ===== TÍTULO =====
+    title = doc.add_heading('INFORME DE FACTURA EMCALI', 0)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for run in title.runs:
+        run.font.color.rgb = RGBColor(0, 51, 102)
+        run.font.bold = True
+    
+    doc.add_paragraph(f'Fecha: {datetime.now().strftime("%d de %B de %Y")}')
+    doc.add_paragraph()
+    
+    # ===== DATOS DE LA FACTURA =====
+    doc.add_heading('DATOS DE LA FACTURA', level=1)
+    
+    # Tabla principal
+    table = doc.add_table(rows=1, cols=2)
+    table.style = 'Table Grid'
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    
+    # Encabezados
+    hdr_cells = table.rows[0].cells
+    hdr_cells[0].text = 'Campo'
+    hdr_cells[1].text = 'Valor'
+    
+    # Datos de la factura
+    datos_factura = [
+        ("Empresa", "EMCALI"),
+        ("Número de Contrato", "2441440414"),
+        ("Total a Pagar", "8,004,574.00"),
+        ("Tipo de Documento", "DOCUMENTO EQUIVALENTE ELECTRÓNICO"),
+        ("Moneda", "Pesos Colombianos (COP)")
+    ]
+    
+    for campo, valor in datos_factura:
+        row_cells = table.add_row().cells
+        row_cells[0].text = campo
+        row_cells[1].text = valor
+        
+        # Resaltar valores importantes
+        if campo in ["Total a Pagar", "Número de Contrato"]:
+            row_cells[1].paragraphs[0].runs[0].font.color.rgb = RGBColor(204, 0, 0)
+            row_cells[1].paragraphs[0].runs[0].font.bold = True
+    
+    doc.add_paragraph()
+    
+    # ===== SERVICIOS INCLUIDOS =====
+    doc.add_heading('SERVICIOS INCLUIDOS', level=1)
+    
+    servicios_table = doc.add_table(rows=1, cols=2)
+    servicios_table.style = 'Table Grid'
+    
+    # Encabezados
+    hdr_cells = servicios_table.rows[0].cells
+    hdr_cells[0].text = 'Servicio'
+    hdr_cells[1].text = 'Empresa'
+    
+    servicios = [
+        ("Energía Eléctrica", "EMCALI"),
+        ("Aseo", "PROMOCALI"),
+        ("Alumbrado Público", "EMCALI"),
+        ("Tasa de Seguridad", "EMCALI")
+    ]
+    
+    for servicio, empresa in servicios:
+        row_cells = servicios_table.add_row().cells
+        row_cells[0].text = servicio
+        row_cells[1].text = empresa
+    
+    doc.add_paragraph()
+    
+    # ===== RESUMEN =====
+    doc.add_heading('RESUMEN', level=1)
+    
+    resumen = doc.add_paragraph()
+    resumen.add_run("Esta factura de EMCALI corresponde al contrato ")
+    resumen.add_run("2441440414").bold = True
+    resumen.add_run(" con un total a pagar de ")
+    resumen.add_run("8,004,574.00 pesos").bold = True
+    resumen.add_run(". Incluye los servicios de energía eléctrica, aseo, alumbrado público y tasa de seguridad.")
+    
+    # ===== PIE DE PÁGINA =====
+    doc.add_paragraph()
+    doc.add_paragraph('--- Fin del Informe ---')
+    doc.add_paragraph(f'Generado el {datetime.now().strftime("%d/%m/%Y")}')
+    
+    # Guardar documento
+    output_dir = "outputs/docx"
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, "INFORME_EMCALI_SIMPLE.docx")
+    
+    doc.save(output_file)
+    
+    print(f"✅ Informe EMCALI simple generado exitosamente!")
+    print(f"📁 Ubicación: {os.path.abspath(output_file)}")
+    print(f"📄 Archivo: INFORME_EMCALI_SIMPLE.docx")
+    
+    return output_file
+
+if __name__ == "__main__":
+    generar_informe_emcali_simple()
